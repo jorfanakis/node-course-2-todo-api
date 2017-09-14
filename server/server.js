@@ -1,5 +1,6 @@
 // Startup the server
 
+require('./config/config');
 const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -9,8 +10,8 @@ const {Todo} = require('./models/todo');
 const {User} = require('./models/user');
 const {ObjectID} = require('mongodb');
 
-var app = express();
-const port = process.env.PORT || 3000;
+const app = express();
+const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
@@ -38,7 +39,7 @@ app.get('/todos', (req, res) => {
 });
 
 app.get('/todos/:id', (req, res) => {
-  var id = req.params.id;
+  const id = req.params.id;
 
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
@@ -72,8 +73,8 @@ app.delete('/todos/:id', (req, res) => {
 });
 
 app.patch('/todos/:id', (req, res) => {
-  var id = req.params.id;
-  var body = _.pick(req.body, ['text', 'completed']);
+  const id = req.params.id;
+  const body = _.pick(req.body, ['text', 'completed']);
 
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();

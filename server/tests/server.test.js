@@ -109,10 +109,10 @@ describe('GET /todos/:id', () => {
 });
 
 describe ('DELETE /todos:id', () => {
-  var hexId = todos[1]._id.toHexString();
 
   it('should remove a todo', (done) => {
 
+    const hexId = todos[1]._id.toHexString();
     request(app)
       .delete(`/todos/${hexId}`)
       .expect(200)
@@ -132,6 +132,7 @@ describe ('DELETE /todos:id', () => {
 
   it('should return 404 if not found', (done) => {
     // Make sure 404 is returned.
+    const hexId = new ObjectID().toHexString(); 
     request(app)
       .delete(`/todos/${hexId}`)
       .expect(404)
