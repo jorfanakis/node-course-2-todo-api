@@ -1,14 +1,89 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
+const jwt = require('jsonwebtoken');
+const _ = require('lodash');
 
-// User Model
-const User = mongoose.model('User', {
+// Stores the schema (properties) for a user.
+const UserSchema = new mongoose.Schema({
   email: { 
     type: String,
     required: true,
     trim: true,
     minlength: 1,
-  }
+    unique: true,
+    validate: {
+      validator: function(v) {
+        return validator.isEmail(v);
+      },
+      message: '{VALUE} is not a valid email'
+    }
+  },
+  password: {
+    type: String,
+    required: true,
+    minLength: 6
+  },
+  tokens: [{
+    access: {
+      type: String,
+      required: true
+    },
+    token: {
+      type: String,
+      required: true
+    }
+  }]
 });
+
+// Instance Methods.
+// This is an override which determines what is sent back when a 
+// mongoose User model is turned to JSON
+// For a user one should not return tokens and password. THis limits that.
+UserSchema.methods.toJSON = function () {
+  const user = this;
+  const userObject = user.toObject();
+  return _.pick(userObject, ['_id', 'email']);
+};
+
+UserSchema.methods.generateAuthToken = function() {
+  const user = this;
+  const access = 'auth';
+  const token = jwt.sign({
+                           _id: user._id.toHexString(),
+                           access: access
+                         },
+                         'abc123').toString();
+   // Adds to lcoal users tokens[]
+   user.tokens.push({access, token});
+
+   // Updates the db.
+   // This does not return a promise. It returns the value (token)
+   // This returned value will be passed as the res to the next then call.
+   return user.save().then(() => { return token; })
+};
+
+// Model methods.
+UserSchema.statics.findByToken = function(token) {
+  const User = this;
+  let decoded;
+
+  try {
+    decoded = jwt.verify(token, 'abc123');
+  } catch (e) {
+    //return new Promise((resolve, reject) => {
+    //  return reject;
+    return Promise.reject();
+  }
+
+  return User.findOne({
+      '_id': decoded._id,
+      'tokens.token': token,
+      'tokens.access': 'auth'
+  });
+};
+
+// User Model
+const User = mongoose.model('User', UserSchema);
 
 module.exports = {
   User: User
