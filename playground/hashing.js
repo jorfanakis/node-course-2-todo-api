@@ -28,7 +28,6 @@ if (resultHash === token.hash) {
   console.log('Data was changed');
 
 }
-*/
 
 const jwt = require('jsonwebtoken');
 
@@ -44,3 +43,21 @@ console.log(token);
 const decoded = jwt.verify(token, '123abc');
 console.log('decoded' + JSON.stringify(decoded));
 
+*/
+const bcrypt = require('bcryptjs');
+const password = '123abc!'
+
+// Create salt nad hash password.
+/*
+bcrypt.genSalt(10, (err, salt) => {
+  bcrypt.hash(password, salt, (err, hash) => {
+    console.log(hash);
+  });
+});
+*/
+
+// To validate if a hash passed in matches password.
+const hashedPassword = '$2a$10$zI8l1c8HCPcu348wrgmcpu.N4meSKyuTqweXOrnWA9AcXAFJvpX5C';
+bcrypt.compare(password, hashedPassword, (err, res) => {
+  console.log(res);
+});
